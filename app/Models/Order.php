@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Ramsey\Uuid\Uuid;
 
 class Order extends Model
 {
@@ -17,7 +18,7 @@ class Order extends Model
     const SHIP_STATUS_RECEIVED = 'received';
 
     public static $refundStatusMap = [
-        self::REFUND_STATUS_PENDING    => '未付款',
+        self::REFUND_STATUS_PENDING    => '未退款',
         self::REFUND_STATUS_APPLIED    => '已申请退款',
         self::REFUND_STATUS_PROCESSING => '退款中',
         self::REFUND_STATUS_SUCCESS    => '退款成功',
@@ -97,5 +98,17 @@ class Order extends Model
             }
         }
         return false;
+    }
+
+    /**
+     * 获得唯一退款编号
+     */
+    public static function getAvailableRefundNo(){
+        do{
+            //Uuid类生成大概率不重复字段串
+            $no = Uuid::uuid4()->getHex();
+        }while(self::query()->where('refund_no',$no)->exists());//do while保证字符串唯一
+        
+        return $no;
     }
 }
